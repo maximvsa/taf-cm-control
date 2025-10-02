@@ -1,3 +1,5 @@
+# (AI slop down below; to be edited later as project picks up and scope is refined)
+
 # Plant-wide Constrained Control of a Minimal Continuous Tenofovir Alafenamide Hemifumarate Synthesis: A Simulation Study
 
 # Problem Statement
