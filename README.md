@@ -1,3 +1,56 @@
+Current Plan:
+
+1. Define and articulate target route. Exact sequence of transforms, reagents, and protecting groups. Lock down IUPAC names, SMILES, InChI, stoichiometry, solvents, temperature, and catalysts of each step in reaction scheme. Store everything in a YAML file (route/route.yaml). (Programs: Python with ruamel.yaml for read/write; validation via pydantic schema in scripts/validate_route.py.)
+
+2. Perform literature sanity check. Store precedent references and sources for each step in the YAML file (purely for reference; likely split off later). Add typical yields, selectivity, and flow-compatibility comments from literature for each step. Add status: verified | unconfirmed for each step after notes are gathered.
+
+3. Perform atom mapping. Get robust atom maps for each step in the reaction scheme. Use one mapper as primary and another to cross-reference. Modify the step and re-perform the literature sanity check for any step where mapping disagrees with the mechanism. Save mapped reactions as .rxn. (Programs: rxnmapper as primary; Indigo Toolkit automapper as secondary; checks with CGRtools’ mapping validators; all orchestrated by scripts/map_steps.py.)
+
+4. Draw mechanisms manually in ChemDraw, as "testable hypotheses," and for each step, label electron sources and electron sinks and identify potential side reactions. Save clean vector files. (Programs: ChemDraw or MarvinSketch to produce mechanisms/step_xx_mech.svg and mechanisms/step_xx_notes.md from scanned sketches or native files.)
+
+5. Formally encode reactions as machine-readable rules. Store RXN/SMARTS templates or mapped RXN files in the project for future generation of graphics and deltas. (Programs: RDKit to author rules/Sxx_template.smarts and to canonicalize SMILES; CGRtools to read/write mapped .rxn.)
+
+6. Build verification script. For each step, the script shall check mass/charge/valence balance, check atom-map bijection and conserved substructures, and optionally calculate ΔG estimators. Modify and reverify any step that fails verification. (Programs: Python scripts/verify_route.py using RDKit + CGRtools; optional thermochemistry via xTB (GFN2-xTB) through subprocess when --dg flag is passed.)
+
+7. Implement CGRtools graphing. From mapped reactions, generate and serialize condensed graphs of reactions (CGRs). Keep both “difference” visualizations and numeric descriptors. (Programs: CGRtools to create *.cgr.json and RDKit/CGRtools to render figures/cgr/*.svg; driver script scripts/build_cgr.py.)
+
+8. Depict the network. For each step, generate an SVG panel with RDKit MolDraw2D, then assemble an interactive or paginated layout: graph the backbone with NetworkX/Graphviz to place nodes/edges; each node/edge links to the per-step SVG; export the large poster only at the end (giant monoliths are a pain to iterate). (Programs: RDKit MolDraw2D → figures/steps/*.svg; NetworkX + Graphviz/dot or pygraphviz → figures/network/route.svg and route.html; driver script scripts/build_network.py.)
+
+9. Depict mechanistic arrows and electron flow. Use a chemical editor for curly arrows (ChemDraw/Marvin/ACD). Export transparent SVG overlays and layer them over the RDKit drawings. Keep arrow artwork separate so re-renders don’t nuke it. (Programs: ChemDraw/Marvin to export figures/arrows/step_xx_arrows.svg; compositing handled by scripts/compose_svgs.py.)
+
+10. Create coherent figure assembly pipeline. Create a Makefile that reads route/route.yaml, validates, generates mapped RXN, CGR, per-step SVGs, the network diagram, and the poster PDF. Targets: env, verify, cgr, steps, network, poster, all. (Programs: GNU Make; Python scripts above; Pandoc + LaTeX engine for final PDF poster assembly.)
+
+11. Show the work. Create a formal report (PDF) summarizing each step’s conditions, mechanism sketch, mapping checksum, CGR image, and literature notes/yield assumptions (it's a receipt for reviewers). (Programs: Python scripts/make_report.py to write Markdown; Pandoc to render reports/route_report.pdf.)
+
+Plan Notes:
+
+Store reagents and conditions for each step in the .yaml → /route/route.yaml (Programs: Python export script).
+
+Store atom maps in .rxn files → /maps/*.rxn and record mapper provenance and versions → /maps/PROVENANCE.md (Programs: rxnmapper, Indigo; Python wrapper).
+
+Store CGRs in .json files → /cgr/*.cgr.json and CGR images → /figures/cgr/*.svg (Programs: CGRtools, RDKit).
+
+Have /figures/steps/*.svg and /figures/network/{route.svg,route.html,positions.json} (Programs: RDKit, NetworkX, Graphviz).
+
+Regularly update a notebook for validation (audit trails) → /notebooks/validation/*.ipynb (Programs: Jupyter, RDKit, CGRtools).
+
+Mechanistic arrow overlays only in /figures/arrows/*.svg; never edit RDKit base SVGs (Programs: ChemDraw/Marvin).
+
+Environment pinning in /env/conda-lock.yml with versions (Python 3.10.x, RDKit 2024.03.x, CGRtools 4.2.x, rxnmapper ≥0.3, Indigo Toolkit ≥1.5). Use mamba to create/lock.
+
+
+And then, after all of that:
+
+1. Create a process flow diagram of the route (add hemifumarate salting step).
+
+2. Create a piping and instrumentation diagram of the entire thing.
+
+3. Start developing the reactor model.
+
+
+
+
+
 # (AI slop down below; to be edited later as project picks up and scope is refined)
 
 # Plant-wide Constrained Control of a Minimal Continuous Tenofovir Alafenamide Hemifumarate Synthesis: A Simulation Study
